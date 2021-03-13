@@ -75,6 +75,7 @@ void init_lcd() {
 
 //Reset LCD
 void lcd_reset() {
+  //Toggle reset pin
   _delay_ms(1);
   PORTC &= ~_BV(RESET);
   _delay_ms(20);
@@ -83,7 +84,7 @@ void lcd_reset() {
 }
 
 void lcd_brightness(uint8_t i) {
-  /* Configure Timer 2 Fast PWM Mode 3 */
+  //Configure Timer 2 Fast PWM Mode 3
   TCCR2A = _BV(COM2A1) | _BV(WGM21) | _BV(WGM20);
   TCCR2B = _BV(CS20);
   OCR2A = i;
