@@ -26,7 +26,7 @@ uint16_t foreground, background;        - Default forground and background colou
 */
 lcd display;
 
-#define set_ram_write_region(sco, eco, spg, epg) \
+#define SET_RAM_WRITE_REGION(sco, eco, spg, epg) \
   write_cmd(COLUMN_ADDRESS_SET);                 \
   write_data16(sco);                             \
   write_data16(eco);                             \
@@ -80,7 +80,7 @@ void init_lcd() {
 /*
 Initialise LCD with parameterised orientation and default colours
 */
-void init_lcd(orientation orn, colour fg, colour bg){
+void init_lcd(orientation orn, colour fg, colour bg) {
   //Enable extended memory interface with 10 bit addressing
   XMCRB = _BV(XMM2) | _BV(XMM1);
   XMCRA = _BV(SRE);
@@ -191,7 +191,7 @@ void set_orientation(orientation o) {
   Then as you shove out data over the parallel interface,
   that region of RAM will be written to. REMEMBER:
   we use 16 bpp mode so each pixel has 16 bits (R-5,G-6,B-5).
-  The code below is defined in the macro set_ram_write_region, but
+  The code below is defined in the macro SET_RAM_WRITE_REGION, but
   it is left here for ease of understanding
   */
   write_cmd(COLUMN_ADDRESS_SET);
@@ -206,7 +206,7 @@ void set_orientation(orientation o) {
 Draw a rectangle
 */
 void fill_rectangle(rectangle r, colour col) {
-  set_ram_write_region(r.left, r.right, r.top, r.bottom);
+  SET_RAM_WRITE_REGION(r.left, r.right, r.top, r.bottom);
   //Set controller into memory write mode
   write_cmd(MEMORY_WRITE);
   uint16_t width = r.right - r.left + 1;
@@ -248,6 +248,15 @@ void fill_rectangle(rectangle r, colour col) {
 }
 
 /*
+Draw a single pixel to the screen with a certain colour
+*/
+void draw_pixel(coord pos, colour col) {
+  SET_RAM_WRITE_REGION(pos.x, pos.x, pos.y, pos.y);
+  write_cmd(MEMORY_WRITE);
+  write_data16(col);
+}
+
+/*
 Draw a rectangle using same structures as graphics library
 */
 void fill_rectangle_compat(coord pos, uint16_t width, uint16_t height, colour col) {
@@ -263,7 +272,7 @@ Draw an image (rect with a colour[] array of the colour of each pixel)
 */
 void fill_rectangle_indexed(rectangle r, colour *col) {
   uint16_t x, y;
-  set_ram_write_region(r.left, r.right, r.top, r.bottom);
+  SET_RAM_WRITE_REGION(r.left, r.right, r.top, r.bottom);
   write_cmd(MEMORY_WRITE);
   for (x = r.left; x <= r.right; x++)
     for (y = r.top; y <= r.bottom; y++)
@@ -284,7 +293,7 @@ void clear_screen() {
 /*
 Display a character
 */
-void display_char(char charToWrite) {
+void display_char(char charToWrite, colour fg, colour bg) {
   uint16_t x, y;
   PGM_P fdata;
   uint8_t bits, mask;
@@ -338,7 +347,7 @@ void display_char(char charToWrite) {
         (bits & mask) will grab the correct bit from the font column byte, then we either draw a pixel if the bit is
         set, else we draw the background colour
       */
-      write_data16((bits & mask) ? display.foreground : display.background);
+      write_data16((bits & mask) ? fg : bg);
     /*
       For reference: '!' is:
       (0x00, 0x00, 0x5F, 0x00, 0x00), which looks like:
@@ -366,7 +375,7 @@ void display_char(char charToWrite) {
   write_data16(x);
   write_cmd(MEMORY_WRITE);
   for (y = spg; y <= epg; y++)
-    write_data16(display.background);
+    write_data16(bg);
 
   //Move character write pointer along 6 (font width + 1 for spacing)
   display.x += 6;
@@ -378,39 +387,15 @@ void display_char(char charToWrite) {
 }
 
 /*
-Display a string (call display_char for each char in the string)
-*/
-void display_string(char *str) {
-  uint8_t i;
-  for (i = 0; str[i]; i++)
-    display_char(str[i]);
-}
-
-/*
 Display a string at a given x and y coordinate
 */
-void display_string_xy(char *str, uint16_t x, uint16_t y) {
+void display_string_xy(char *str, coord pos, colour fg, colour bg) {
   uint8_t i;
   //Set the character pointer coordinate to the argument values
-  display.x = x;
-  display.y = y;
+  display.x = pos.x;
+  display.y = pos.y;
   for (i = 0; str[i]; i++)
-    display_char(str[i]);
-}
-
-/*
-Helper function to diplay a byte as ascii, might be useful for debugging
-*/
-void display_register(uint8_t reg) {
-  uint8_t i;
-
-  for (i = 0; i < 8; i++) {
-    if ((reg & (_BV(7) >> i)) != 0) {
-      display_char('1');
-    } else {
-      display_char('.');
-    }
-  }
+    display_char(str[i], fg, bg);
 }
 
 /*
