@@ -40,6 +40,7 @@ void grDrawCircle(coord pos, uint16_t radius, uint16_t colour) {
   draw_pixel({pos.x, pos.y - radius}, colour);
   draw_pixel({pos.x + radius, pos.y}, colour);
   draw_pixel({pos.x - radius, pos.y}, colour);
+  _delay_ms(1000);
 
   while (x < y) {
     if (f >= 0) {
@@ -52,13 +53,14 @@ void grDrawCircle(coord pos, uint16_t radius, uint16_t colour) {
     f += ddF_x;
 
     draw_pixel({pos.x + x, pos.y + y}, colour);
-    draw_pixel({pos.x - x, pos.y + y}, colour);
-    draw_pixel({pos.x + x, pos.y - y}, colour);
-    draw_pixel({pos.x - x, pos.y - y}, colour);
-    draw_pixel({pos.x + y, pos.y + x}, colour);
-    draw_pixel({pos.x - y, pos.y + x}, colour);
-    draw_pixel({pos.x + y, pos.y - x}, colour);
-    draw_pixel({pos.x - y, pos.y - x}, colour);
+    //draw_pixel({pos.x - x, pos.y + y}, colour);
+    //draw_pixel({pos.x + x, pos.y - y}, colour);
+    //draw_pixel({pos.x - x, pos.y - y}, colour);
+    //draw_pixel({pos.x + y, pos.y + x}, colour);
+    //draw_pixel({pos.x - y, pos.y + x}, colour);
+    //draw_pixel({pos.x + y, pos.y - x}, colour);
+    //draw_pixel({pos.x - y, pos.y - x}, colour);
+    _delay_ms(100);
   }
 }
 
