@@ -27,41 +27,53 @@ void grDrawRect(coord pos, uint16_t width, uint16_t height, uint8_t lineWidth, c
 }
 
 /*
-Draw an outline of a circle
+Draw an outline of a circle using the Midpoint Circle Algorithm
+(https://en.wikipedia.org/wiki/Midpoint_circle_algorithm)
 */
-void grDrawCircle(coord pos, uint16_t radius, uint16_t colour) {
-  int16_t f = 1 - radius;
-  int16_t ddF_x = 1;
-  int16_t ddF_y = -2 * radius;
-  int16_t x = 0;
-  int16_t y = radius;
-
-  draw_pixel({pos.x, pos.y + radius}, colour);
-  draw_pixel({pos.x, pos.y - radius}, colour);
-  draw_pixel({pos.x + radius, pos.y}, colour);
-  draw_pixel({pos.x - radius, pos.y}, colour);
-  _delay_ms(1000);
-
-  while (x < y) {
-    if (f >= 0) {
-      y--;
-      ddF_y += 2;
-      f += ddF_y;
+void grDrawCircle(coord pos, uint16_t radius, colour col) {
+  int16_t x = radius;
+  int16_t y = 0;
+  int err = 0;
+  //First draw 4 points on radius for each cardinal direction
+  draw_pixel({pos.x, pos.y + radius - 1}, col);
+  draw_pixel({pos.x, pos.y - radius + 1}, col);
+  draw_pixel({pos.x + radius - 1, pos.y}, col);
+  draw_pixel({pos.x - radius + 1, pos.y}, col);
+  //Then use the algorithm to draw the rest of the circle:
+  while (x >= y) {
+    if (err <= 0) {
+      y += 1;
+      err += (y << 1) + 1;
     }
-    x++;
-    ddF_x += 2;
-    f += ddF_x;
 
-    draw_pixel({pos.x + x, pos.y + y}, colour);
-    //draw_pixel({pos.x - x, pos.y + y}, colour);
-    //draw_pixel({pos.x + x, pos.y - y}, colour);
-    //draw_pixel({pos.x - x, pos.y - y}, colour);
-    //draw_pixel({pos.x + y, pos.y + x}, colour);
-    //draw_pixel({pos.x - y, pos.y + x}, colour);
-    //draw_pixel({pos.x + y, pos.y - x}, colour);
-    //draw_pixel({pos.x - y, pos.y - x}, colour);
-    _delay_ms(100);
+    if (err > 0) {
+      x -= 1;
+      err -= (x << 1) + 1;
+    }
+
+    draw_pixel({pos.x + x, pos.y + y}, col);
+    draw_pixel({pos.x + y, pos.y + x}, col);
+    draw_pixel({pos.x - y, pos.y + x}, col);
+    draw_pixel({pos.x - x, pos.y + y}, col);
+    draw_pixel({pos.x - x, pos.y - y}, col);
+    draw_pixel({pos.x - y, pos.y - x}, col);
+    draw_pixel({pos.x + y, pos.y - x}, col);
+    draw_pixel({pos.x + x, pos.y - y}, col);
   }
+}
+
+/*
+Draw a horizontal line from `pos` with a given width
+*/
+void grDrawHLine(coord pos, uint16_t width, colour col) {
+  fill_rectangle({pos.x, pos.x + width, pos.y, pos.y}, col);
+}
+
+/*
+Draw a vertical line from `pos` with a given height
+*/
+void grDrawVLine(coord pos, uint16_t height, colour col) {
+  fill_rectangle({pos.x, pos.x, pos.y, pos.y + height}, col);
 }
 
 /*
