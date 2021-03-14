@@ -18,9 +18,10 @@
 #include "ili934x.h"
 
 /*
+For reference, this struct has fields:
 uint16_t width, height;                 - Display width and height
 orientation orient;                     - Display orientation
-uint16_t x, y;                          - Display write-to point (used for writing characters and strings)
+uint16_t x, y;                          - Character write-to point (used for writing characters and strings)
 uint16_t foreground, background;        - Default forground and background colours
 */
 lcd display;
@@ -33,6 +34,9 @@ lcd display;
   write_data16(spg);                             \
   write_data16(epg)
 
+/*
+Initialise LCD
+*/
 void init_lcd() {
   //Enable extended memory interface with 10 bit addressing
   XMCRB = _BV(XMM2) | _BV(XMM1);
@@ -73,7 +77,52 @@ void init_lcd() {
   PORTB |= _BV(BLC);
 }
 
-//Reset LCD
+/*
+Initialise LCD with parameterised orientation and default colours
+*/
+void init_lcd(orientation orn, colour fg, colour bg){
+  //Enable extended memory interface with 10 bit addressing
+  XMCRB = _BV(XMM2) | _BV(XMM1);
+  XMCRA = _BV(SRE);
+  //Set reset and backlight pins as outputs
+  DDRC |= _BV(RESET);
+  DDRB |= _BV(BLC);
+  lcd_reset();
+  //Disable and wake display whilst we configure it
+  write_cmd(DISPLAY_OFF);
+  write_cmd(SLEEP_OUT);
+  _delay_ms(60);
+  write_cmd_data(INTERNAL_IC_SETTING, 0x01);
+  //Power / voltage control settings (p.178-180)
+  write_cmd(POWER_CONTROL_1);
+  write_data16(0x2608);
+  write_cmd_data(POWER_CONTROL_2, 0x10);
+  write_cmd(VCOM_CONTROL_1);
+  write_data16(0x353E);
+  write_cmd_data(VCOM_CONTROL_2, 0xB5);
+  //Interface control (p.192)
+  write_cmd_data(INTERFACE_CONTROL, 0x01);
+  write_data16(0x0000);
+  //16 bit/pixel (p.134)
+  write_cmd_data(PIXEL_FORMAT_SET, 0x55);
+
+  //All this stuff here should be taken out since it really should be implementation specific
+  set_orientation(orn);
+  clear_screen();
+  display.x = 0;
+  display.y = 0;
+  display.background = bg;
+  display.foreground = fg;
+  write_cmd(DISPLAY_ON);
+  _delay_ms(50);
+  write_cmd_data(TEARING_EFFECT_LINE_ON, 0x00);
+  EICRB |= _BV(ISC61);
+  PORTB |= _BV(BLC);
+}
+
+/*
+Reset LCD
+*/
 void lcd_reset() {
   //Toggle reset pin
   _delay_ms(1);
@@ -83,6 +132,9 @@ void lcd_reset() {
   _delay_ms(120);
 }
 
+/*
+Set LCD brightness
+*/
 void lcd_brightness(uint8_t i) {
   //Configure Timer 2 Fast PWM Mode 3
   TCCR2A = _BV(COM2A1) | _BV(WGM21) | _BV(WGM20);
@@ -90,7 +142,9 @@ void lcd_brightness(uint8_t i) {
   OCR2A = i;
 }
 
-//Set LCD orientation
+/*
+Set LCD orientation
+*/
 void set_orientation(orientation o) {
   display.orient = o;
   //Configure memory write/read directions (p.127)
@@ -148,33 +202,10 @@ void set_orientation(orientation o) {
   write_data16(display.height - 1);  //E(nd) P(age)
 }
 
-void set_frame_rate_hz(uint8_t framerate) {
-  //Various parameters for framerate settings (yet to fully understand)
-  uint8_t DIVA;    //Division ratio for clock
-  uint8_t RTNA;    //Clocks/line?
-  uint8_t period;  //Magic?
-  if (framerate > 118)
-    framerate = 118;
-  if (framerate < 8)
-    framerate = 8;
-  if (framerate > 60) {
-    DIVA = 0x00;
-  } else if (framerate > 30) {
-    DIVA = 0x01;
-  } else if (framerate > 15) {
-    DIVA = 0x02;
-  } else {
-    DIVA = 0x03;
-  }
-  period = 1920.0 / framerate;
-  RTNA = period >> DIVA;
-  //Frame rate control (p.155)
-  write_cmd(FRAME_CONTROL_IN_NORMAL_MODE);
-  write_data(DIVA);
-  write_data(RTNA);
-}
-
-void fill_rectangle(rectangle r, uint16_t colour) {
+/*
+Draw a rectangle
+*/
+void fill_rectangle(rectangle r, colour col) {
   set_ram_write_region(r.left, r.right, r.top, r.bottom);
   //Set controller into memory write mode
   write_cmd(MEMORY_WRITE);
@@ -202,31 +233,41 @@ void fill_rectangle(rectangle r, uint16_t colour) {
   }
   uint8_t pix1 = odm8 % 8;
   while (pix1--)  //Shove data into RAM `pix1` times
-    write_data16(colour);
+    write_data16(col);
   uint16_t pix8 = odd8 + (odm8 >> 3);
   while (pix8--) {
-    write_data16(colour);
-    write_data16(colour);
-    write_data16(colour);
-    write_data16(colour);
-    write_data16(colour);
-    write_data16(colour);
-    write_data16(colour);
-    write_data16(colour);
-    _delay_ms(1);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
   }
+}
+
+/*
+Draw a rectangle using same structures as graphics library
+*/
+void fill_rectangle_compat(coord pos, uint16_t width, uint16_t height, colour col) {
+  rectangle r = {pos.x,
+                 (pos.x + width) - 1,
+                 pos.y,
+                 (pos.y + height) - 1};
+  fill_rectangle(r, col);
 }
 
 /*
 Draw an image (rect with a colour[] array of the colour of each pixel)
 */
-void fill_rectangle_indexed(rectangle r, uint16_t *colour) {
+void fill_rectangle_indexed(rectangle r, colour *col) {
   uint16_t x, y;
   set_ram_write_region(r.left, r.right, r.top, r.bottom);
   write_cmd(MEMORY_WRITE);
   for (x = r.left; x <= r.right; x++)
     for (y = r.top; y <= r.bottom; y++)
-      write_data16(*colour++);
+      write_data16(*col++);
 }
 
 /*
@@ -370,4 +411,33 @@ void display_register(uint8_t reg) {
       display_char('.');
     }
   }
+}
+
+/*
+Set framerate
+*/
+void set_frame_rate_hz(uint8_t framerate) {
+  //Various parameters for framerate settings (yet to fully understand)
+  uint8_t DIVA;    //Division ratio for clock
+  uint8_t RTNA;    //Clocks/line?
+  uint8_t period;  //Magic?
+  if (framerate > 118)
+    framerate = 118;
+  if (framerate < 8)
+    framerate = 8;
+  if (framerate > 60) {
+    DIVA = 0x00;
+  } else if (framerate > 30) {
+    DIVA = 0x01;
+  } else if (framerate > 15) {
+    DIVA = 0x02;
+  } else {
+    DIVA = 0x03;
+  }
+  period = 1920.0 / framerate;
+  RTNA = period >> DIVA;
+  //Frame rate control (p.155)
+  write_cmd(FRAME_CONTROL_IN_NORMAL_MODE);
+  write_data(DIVA);
+  write_data(RTNA);
 }

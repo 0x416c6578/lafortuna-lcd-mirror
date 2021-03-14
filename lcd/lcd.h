@@ -6,6 +6,8 @@
 #include <avr/io.h>
 #include <stdint.h>
 
+#include "utils.h"
+
 #define LCDWIDTH 240
 #define LCDHEIGHT 320
 
@@ -18,6 +20,8 @@
 #define RED 0xF800
 #define MAGENTA 0xF81F
 #define YELLOW 0xFFE0
+
+typedef uint16_t colour;
 
 typedef enum { North,
                West,
@@ -39,11 +43,13 @@ typedef struct {
 } rectangle;
 
 void init_lcd();
+void init_lcd(orientation orn, colour fg = 0xFFFF, colour bg = 0x0000);
 void lcd_brightness(uint8_t i);
 void set_orientation(orientation o);
 void set_frame_rate_hz(uint8_t f);
 void clear_screen();
 void fill_rectangle(rectangle r, uint16_t col);
+void fill_rectangle_compat(coord pos, uint16_t width, uint16_t height, colour col);
 void fill_rectangle_indexed(rectangle r, uint16_t *col);
 void display_char(char c);
 void display_string(char *str);
