@@ -33,7 +33,7 @@ void grDrawCircle(coord pos, uint16_t radius, colour col) {
   int16_t x = 0;
   int16_t y = radius;
   int16_t decision = 3 - (2 * radius);
-  DRAW_BRESENHAM_CIRCLE(pos.x, pos.y, x, y, col);
+  DRAW_BRESENHAM_CIRCLE_FULL(pos.x, pos.y, x, y, col);
   while (y >= x) {
     x++;
     if (decision > 0) {
@@ -42,7 +42,7 @@ void grDrawCircle(coord pos, uint16_t radius, colour col) {
     } else {
       decision = decision + 4 * x + 6;
     }
-    DRAW_BRESENHAM_CIRCLE(pos.x, pos.y, x, y, col);
+    DRAW_BRESENHAM_CIRCLE_FULL(pos.x, pos.y, x, y, col);
   }
 
   /*
