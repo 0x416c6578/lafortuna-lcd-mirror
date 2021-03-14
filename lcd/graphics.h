@@ -1,4 +1,13 @@
 #include "lcd.h"
+#define DRAW_BRESENHAM_CIRCLE(xc, yc, x, y, col) \
+  draw_pixel({xc + x, yc + y}, col);             \
+  draw_pixel({xc - x, yc + y}, col);             \
+  draw_pixel({xc + x, yc - y}, col);             \
+  draw_pixel({xc - x, yc - y}, col);             \
+  draw_pixel({xc + y, yc + x}, col);             \
+  draw_pixel({xc - y, yc + x}, col);             \
+  draw_pixel({xc + y, yc - x}, col);             \
+  draw_pixel({xc - y, yc - x}, col)
 
 void grInit(orientation orn, colour fg = WHITE, colour bg = BLACK);
 void grClearDisplay();

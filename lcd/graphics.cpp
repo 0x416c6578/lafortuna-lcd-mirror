@@ -27,13 +27,25 @@ void grDrawRect(coord pos, uint16_t width, uint16_t height, uint8_t lineWidth, c
 }
 
 /*
-Draw an outline of a circle using the Midpoint Circle Algorithm
-(https://en.wikipedia.org/wiki/Midpoint_circle_algorithm)
+Draw an outline of a circle using Bresenham's algorithm
 */
 void grDrawCircle(coord pos, uint16_t radius, colour col) {
-  int16_t x = radius;
-  int16_t y = 0;
-  int err = 0;
+  int16_t x = 0;
+  int16_t y = radius;
+  int16_t decision = 3 - (2 * radius);
+  DRAW_BRESENHAM_CIRCLE(pos.x, pos.y, x, y, col);
+  while (y >= x) {
+    x++;
+    if (decision > 0) {
+      y--;
+      decision = decision + 4 * (x - y) + 10;
+    } else {
+      decision = decision + 4 * x + 6;
+    }
+    DRAW_BRESENHAM_CIRCLE(pos.x, pos.y, x, y, col);
+  }
+
+  /*
   //First draw 4 points on radius for each cardinal direction
   draw_pixel({pos.x, pos.y + radius - 1}, col);
   draw_pixel({pos.x, pos.y - radius + 1}, col);
@@ -41,14 +53,14 @@ void grDrawCircle(coord pos, uint16_t radius, colour col) {
   draw_pixel({pos.x - radius + 1, pos.y}, col);
   //Then use the algorithm to draw the rest of the circle:
   while (x >= y) {
-    if (err <= 0) {
+    if (decision <= 0) {
       y += 1;
-      err += (y << 1) + 1;
+      decision += (y << 1) + 1;
     }
 
-    if (err > 0) {
+    if (decision > 0) {
       x -= 1;
-      err -= (x << 1) + 1;
+      decision -= (x << 1) + 1;
     }
 
     draw_pixel({pos.x + x, pos.y + y}, col);
@@ -60,6 +72,7 @@ void grDrawCircle(coord pos, uint16_t radius, colour col) {
     draw_pixel({pos.x + y, pos.y - x}, col);
     draw_pixel({pos.x + x, pos.y - y}, col);
   }
+  */
 }
 
 /*

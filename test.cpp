@@ -15,7 +15,7 @@ int main() {
   grInit(West, WHITE);  //Use default arguments for fg and bg colours
   //grDrawRect({0, 0}, 100, 100, 10, RED, GREEN);  //Draw a 100x100 box at 0,0 with line width 4
   //grWriteString({0, 150}, "This is a test string\nWith a newline", RED, GREEN);
-  while (1) {
-    grDrawCircle({rand() % 160 + 80, rand() % 120 + 60}, rand() % 127, RGB_CONVERT(rand() & 0xFF, rand() & 0xFF, rand() & 0xFF));
+  for (int i = 1; i < 150; i++) {
+    grDrawCircle({160, 120}, i);
   }
 }
