@@ -177,15 +177,15 @@ void set_orientation(orientation o) {
   When writing to the display you set a RAM region as follows:
   |---------------------------|
   |                           |
-  |    [SC]           [EC]    |
-  |     *..............*      |
+  |     [SC]          [EC]    |
+  | [SP]*..............*      |
   |     .              .      |
   |     .              .      |
   |     .              .      |
   |     .              .      |
   |     .              .      |
-  |     *..............*      |
-  |    [SP]           [EP]    |
+  | [EP]*..............*      |
+  |                           |
   |                           |
   |---------------------------|
   Then as you shove out data over the parallel interface,
@@ -211,6 +211,21 @@ void fill_rectangle(rectangle r, colour col) {
   write_cmd(MEMORY_WRITE);
   uint16_t width = r.right - r.left + 1;
   uint16_t height = r.bottom - r.top + 1;
+  uint32_t area = ((uint32_t)width * height);
+  uint16_t div8 = area / 8;
+  uint16_t mod8 = area % 8;
+  while (mod8--)
+    write_data16(col);
+  while (div8--) {
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+    write_data16(col);
+  }
 
   /*
     Here is some logic to get around the fact that apparently the super smart
@@ -218,7 +233,9 @@ void fill_rectangle(rectangle r, colour col) {
     Not entirely sure how it works but I don't have the brainpower currently
     to figure it out
   */
-  uint16_t mod8, div8;
+  /*
+  uint16_t mod8,
+      div8;
   uint16_t odm8, odd8;
   if (height > width) {
     mod8 = height % 8;    //Height % 8
@@ -245,6 +262,7 @@ void fill_rectangle(rectangle r, colour col) {
     write_data16(col);
     write_data16(col);
   }
+  */
 }
 
 /*
