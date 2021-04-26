@@ -15,7 +15,17 @@ int main() {
   CLKPR = 0;
 
   grInit(West, WHITE);  //Use default arguments for fg and bg colours
-  char buf[4];
-  sprintf(buf, "%02d", sizeof(uint32_t));
-  grWriteString({0, 0}, buf);
+
+  uint16_t i = 0;
+  for (;;) {
+    if (i == 320) {
+      grFillRect({i, 120}, 5, 5, BLACK);
+      i = 0;
+    }
+    grFillRect({i, 120}, 5, 5, BLACK);
+    grFillRect({i + 1, 120}, 5, 5, WHITE);
+    i++;
+    _delay_ms(2);
+  }
+  grDrawCircle({160, 120}, 20);
 }

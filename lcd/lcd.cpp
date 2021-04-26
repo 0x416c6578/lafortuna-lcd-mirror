@@ -38,43 +38,7 @@ lcd display;
 Initialise LCD
 */
 void init_lcd() {
-  //Enable extended memory interface with 10 bit addressing
-  XMCRB = _BV(XMM2) | _BV(XMM1);
-  XMCRA = _BV(SRE);
-  //Set reset and backlight pins as outputs
-  DDRC |= _BV(RESET);
-  DDRB |= _BV(BLC);
-  lcd_reset();
-  //Disable and wake display whilst we configure it
-  write_cmd(DISPLAY_OFF);
-  write_cmd(SLEEP_OUT);
-  _delay_ms(60);
-  write_cmd_data(INTERNAL_IC_SETTING, 0x01);
-  //Power / voltage control settings (p.178-180)
-  write_cmd(POWER_CONTROL_1);
-  write_data16(0x2608);
-  write_cmd_data(POWER_CONTROL_2, 0x10);
-  write_cmd(VCOM_CONTROL_1);
-  write_data16(0x353E);
-  write_cmd_data(VCOM_CONTROL_2, 0xB5);
-  //Interface control (p.192)
-  write_cmd_data(INTERFACE_CONTROL, 0x01);
-  write_data16(0x0000);
-  //16 bit/pixel (p.134)
-  write_cmd_data(PIXEL_FORMAT_SET, 0x55);
-
-  //All this stuff here should be taken out since it really should be implementation specific
-  set_orientation(North);
-  clear_screen();
-  display.x = 0;
-  display.y = 0;
-  display.background = BLACK;
-  display.foreground = WHITE;
-  write_cmd(DISPLAY_ON);
-  _delay_ms(50);
-  write_cmd_data(TEARING_EFFECT_LINE_ON, 0x00);
-  EICRB |= _BV(ISC61);
-  PORTB |= _BV(BLC);
+  init_lcd(North);
 }
 
 /*
@@ -106,7 +70,6 @@ void init_lcd(orientation orn, colour fg, colour bg) {
   //16 bit/pixel (p.134)
   write_cmd_data(PIXEL_FORMAT_SET, 0x55);
 
-  //All this stuff here should be taken out since it really should be implementation specific
   set_orientation(orn);
   clear_screen();
   display.x = 0;
@@ -212,8 +175,8 @@ void fill_rectangle(rectangle r, colour col) {
   uint16_t width = r.right - r.left + 1;
   uint16_t height = r.bottom - r.top + 1;
   uint32_t area = ((uint32_t)width * height);
-  uint16_t div8 = area / 8;
-  uint16_t mod8 = area % 8;
+  uint16_t div8 = area / 16;
+  uint16_t mod8 = area % 16;
   while (mod8--)
     write_data16(col);
   while (div8--) {
@@ -225,34 +188,6 @@ void fill_rectangle(rectangle r, colour col) {
     write_data16(col);
     write_data16(col);
     write_data16(col);
-  }
-
-  /*
-    Here is some logic to get around the fact that apparently the super smart
-    compiler can't handle us multiplying two numbers whose result is over 16 bits.
-    Not entirely sure how it works but I don't have the brainpower currently
-    to figure it out
-  */
-  /*
-  uint16_t mod8,
-      div8;
-  uint16_t odm8, odd8;
-  if (height > width) {
-    mod8 = height % 8;    //Height % 8
-    div8 = height >> 3;   //Height / 8
-    odm8 = width * mod8;  //Width * (height % 8)
-    odd8 = width * div8;  //Width * (height / 8)
-  } else {
-    mod8 = width % 8;
-    div8 = width >> 3;
-    odm8 = height * mod8;
-    odd8 = height * div8;
-  }
-  uint8_t pix1 = odm8 % 8;
-  while (pix1--)  //Shove data into RAM `pix1` times
-    write_data16(col);
-  uint16_t pix8 = odd8 + (odm8 >> 3);
-  while (pix8--) {
     write_data16(col);
     write_data16(col);
     write_data16(col);
@@ -262,7 +197,6 @@ void fill_rectangle(rectangle r, colour col) {
     write_data16(col);
     write_data16(col);
   }
-  */
 }
 
 /*

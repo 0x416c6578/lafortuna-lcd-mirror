@@ -44,35 +44,6 @@ void grDrawCircle(coord pos, uint16_t radius, colour col) {
     }
     DRAW_BRESENHAM_CIRCLE_FULL(pos.x, pos.y, x, y, col);
   }
-
-  /*
-  //First draw 4 points on radius for each cardinal direction
-  draw_pixel({pos.x, pos.y + radius - 1}, col);
-  draw_pixel({pos.x, pos.y - radius + 1}, col);
-  draw_pixel({pos.x + radius - 1, pos.y}, col);
-  draw_pixel({pos.x - radius + 1, pos.y}, col);
-  //Then use the algorithm to draw the rest of the circle:
-  while (x >= y) {
-    if (decision <= 0) {
-      y += 1;
-      decision += (y << 1) + 1;
-    }
-
-    if (decision > 0) {
-      x -= 1;
-      decision -= (x << 1) + 1;
-    }
-
-    draw_pixel({pos.x + x, pos.y + y}, col);
-    draw_pixel({pos.x + y, pos.y + x}, col);
-    draw_pixel({pos.x - y, pos.y + x}, col);
-    draw_pixel({pos.x - x, pos.y + y}, col);
-    draw_pixel({pos.x - x, pos.y - y}, col);
-    draw_pixel({pos.x - y, pos.y - x}, col);
-    draw_pixel({pos.x + y, pos.y - x}, col);
-    draw_pixel({pos.x + x, pos.y - y}, col);
-  }
-  */
 }
 
 /*
