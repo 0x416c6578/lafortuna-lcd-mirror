@@ -38,13 +38,13 @@ lcd display;
 Initialise LCD
 */
 void init_lcd() {
-  init_lcd(North);
+  init_lcd_opts(North, WHITE, BLACK);
 }
 
 /*
 Initialise LCD with parameterised orientation and default colours
 */
-void init_lcd(orientation orn, colour fg, colour bg) {
+void init_lcd_opts(orientation orn, colour fg, colour bg) {
   //Enable extended memory interface with 10 bit addressing
   XMCRB = _BV(XMM2) | _BV(XMM1);
   XMCRA = _BV(SRE);

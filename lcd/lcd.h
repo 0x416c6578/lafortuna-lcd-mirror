@@ -44,7 +44,7 @@ typedef struct {
 } rectangle;
 
 void init_lcd();
-void init_lcd(orientation orn, colour fg = 0xFFFF, colour bg = 0x0000);
+void init_lcd_opts(orientation orn, colour fg, colour bg);
 void lcd_brightness(uint8_t i);
 void set_orientation(orientation o);
 void set_frame_rate_hz(uint8_t f);
