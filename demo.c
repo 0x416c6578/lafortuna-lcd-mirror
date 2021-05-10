@@ -14,8 +14,9 @@ int main() {
   CLKPR = (1 << CLKPCE);
   CLKPR = 0;
 
-  grInit(West, WHITE, BLACK);  //Use default arguments for fg and bg colours
+  grInit(West, WHITE, BLACK);
 
+  /*
   grWriteString((coord){0, 0}, "Demonstration of LaFortuna-LCD", WHITE, BLACK);
   grWriteString((coord){0, 10}, "grDrawLine", WHITE, BLACK);
   grDrawLine((coord){0, 20}, (coord){50, 30}, GREEN);
@@ -49,4 +50,5 @@ int main() {
 
   grWriteString((coord){0, 145}, "Using RGB_CONVERT(255, 128, 128)", WHITE, BLACK);
   grFillRoundedRect((coord){0, 155}, 50, 15, 8, RGB_CONVERT(255, 128, 128));
+  */
 }
