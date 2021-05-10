@@ -1,11 +1,5 @@
 # lafortuna-lcd
-- This is my attempt at understanding and documenting everything in the LCD driver
+- This is my attempt at understanding and documenting everything in the LCD driver as well as writing a simple graphics library
 - Currently the main driver is comprehensively commented with as much as I can work out
-- In the future I plan to write the documentation as markdown or similar, as well as implement cool features
+- Code is based on the Adafruit library, detailed [here](http://forum.pjrc.com/threads/26305-Highly-optimized-ILI9341-%28320x240-TFT-color-display%29-library)
 
-## Features Planned
-- Buttons
-- More shapes
-  - Outlined rectangle
-  - Circles
-  - Colour effects, e.g. rainbows and gradients
