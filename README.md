@@ -34,6 +34,9 @@
 - `grDrawTriangle(coord p1, coord p2, coord p3, colour col)` takes three points and a colour, and draws a triangle accordingly
 - `grFillTriangle(coord p1, coord p2, coord p3, colour color)` is equivalent to above except it fills the triangle
 
+## Text
+- `grWriteString(coord pos, char* string, colour fg, colour bg)` takes an origin position (again top-left corner of text), a `char*` containing the text, and a foreground and background colour for the text
+
 ## Other Stuff
 - `grClearDisplay()` clears the display
 - `RGB_CONVERT(r, g, b)` takes three bytes for red, green and blue and converts them to a `colour` (`uint16_t`) for use with the display
